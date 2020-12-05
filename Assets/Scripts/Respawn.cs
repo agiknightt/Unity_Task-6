@@ -6,36 +6,38 @@ using UnityEngine.Events;
 
 public class Respawn : MonoBehaviour
 {
-    [SerializeField] private Transform _pointSpawn;
+    [SerializeField] private Transform _pointsSpawn;
+    [SerializeField] private GameObject _enemy;
 
-    private Color _targetColor = new Color(1,1,1,1);
+    private List<Transform> _points = new List<Transform>();
+    private float _spawnTime = 2;
+    private float _elapsedTime = 0;
+
+    private void Start()
+    {
+        for (int i = 0; i < _pointsSpawn.childCount; i++)
+        {
+            _points.Add(_pointsSpawn.GetChild(i).transform);
+        }       
+    }
 
     private void Update()
     {
-        RespawnEnemy();        
-    }
+        _elapsedTime += Time.deltaTime;
 
+        if (_elapsedTime >= _spawnTime)
+        {
+            _elapsedTime = 0;
+
+            RespawnEnemy();
+        }        
+    }
     private void RespawnEnemy()
     {
-        for (int i = 0; i < _pointSpawn.childCount; i++)
+        if(_points.Count >= 1)
         {
-            if (i == 0)
-            {
-                ChangeColor(i);
-            }
-            else if (_pointSpawn.GetChild(i).GetComponent<SpriteRenderer>().color.a <= _targetColor.a && _pointSpawn.GetChild(i - 1).GetComponent<SpriteRenderer>().color.a >= _targetColor.a)
-            {
-                ChangeColor(i);
-            }
-        }
+            Instantiate(_enemy, _points[0].transform);
+            _points.RemoveAt(0);
+        }        
     }
-
-    private void ChangeColor(int i)
-    {
-        Sequence sequence = DOTween.Sequence();
-
-        sequence.Append(_pointSpawn.GetChild(i).GetComponent<SpriteRenderer>().DOFade(1, 2)).SetRelative();
-    }
-
-    
 }
